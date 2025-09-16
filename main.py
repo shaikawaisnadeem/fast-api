@@ -1,4 +1,4 @@
-from fastapi import FastAPI,Path,HTTPException
+from fastapi import FastAPI,Path,HTTPException,Query
 import json 
 
 app = FastAPI()
@@ -75,3 +75,19 @@ def getPatient(patientId: str = Path(..., description="ID of the patient in the 
 # in this case:
 # city=Delhi is a query parameter for filtering 
 # sort_age =age is a query parameter for sorting 
+
+
+
+# Qrery is a utilituy fn provided by FastAPi to declare and docuent query parameters in ur api end point 
+
+@app.get('/sort')
+def sortPatients(sort_by: str = Query(..., description="sort on the basis of height , weight and bmi"), order:str = Query(...,description='sort in asc or dec order')):
+    valid_field  = ['height', 'weight', 'bmi']
+    if sort_by not in valid_field:
+        raise HTTPException(status_code=400, detail=f"invalid field select from {valid_field}")
+    if order not in ['asc', 'desc']:
+        raise HTTPException(status_code=400, detail='Invalid order select between asc and desc')
+    data = loadData()
+    sort_order = True if order=='desc' else False
+    sorted_data = sorted(data.values(), key=lambda x: x.get(sort_by, 0), reverse=sort_order)
+    return sorted_data
